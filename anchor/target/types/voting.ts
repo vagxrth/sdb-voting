@@ -138,7 +138,20 @@ export type Voting = {
           "signer": true
         },
         {
+          "name": "pollAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "pollId"
+              }
+            ]
+          }
+        },
+        {
           "name": "candidate",
+          "writable": true,
           "pda": {
             "seeds": [
               {

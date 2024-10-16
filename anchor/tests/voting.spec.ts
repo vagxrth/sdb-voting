@@ -87,6 +87,26 @@ describe('voting', () => {
 
   // vote test
   it("Vote", async() => {
-    
+    await votingProgram.methods.vote(
+      "Trump",
+      new anchor.BN(1)
+    ).rpc()
+
+    const [trumpAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(1).toArrayLike(Buffer, 'le', 8) ,Buffer.from('Trump')],
+      votingAddress
+    );
+    const trumpCandidate = await votingProgram.account.candidate.fetch(trumpAddress);
+    expect(trumpCandidate.candidateVotes.toNumber()).toEqual(1);
+    console.log(trumpCandidate);
+
+
+    const [harrisAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(1).toArrayLike(Buffer, 'le', 8) ,Buffer.from('Harris')],
+      votingAddress
+    );
+    const harrisCandidate = await votingProgram.account.candidate.fetch(harrisAddress);
+    expect(harrisCandidate.candidateVotes.toNumber()).toEqual(0);
+    console.log(harrisCandidate)
   })
 })

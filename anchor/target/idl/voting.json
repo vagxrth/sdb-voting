@@ -132,7 +132,20 @@
           "signer": true
         },
         {
+          "name": "poll_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "poll_id"
+              }
+            ]
+          }
+        },
+        {
           "name": "candidate",
+          "writable": true,
           "pda": {
             "seeds": [
               {
