@@ -1,7 +1,14 @@
-import { Connection, PublicKey } from '@solana/web3.js';
-import { ActionPostRequest, LinkedAction } from './../../../../node_modules/@solana/actions-spec/index.d';
-import { ActionGetResponse, ACTIONS_CORS_HEADERS } from "@solana/actions"
+import { sign } from './../../../../node_modules/tweetnacl/nacl.d';
+import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { ActionPostRequest } from './../../../../node_modules/@solana/actions-spec/index.d';
+import { ActionGetResponse, ACTIONS_CORS_HEADERS, createPostResponse } from "@solana/actions"
+import { Voting } from '../../../../anchor/target/types/voting';
+import { Program } from '@coral-xyz/anchor';
+import * as anchor from '@coral-xyz/anchor'
 
+const IDL = require('../../../../anchor/target/idl/voting.json')
+
+export const OPTIONS = GET;
 
 export async function GET(request: Request) {
   const actionMetadata: ActionGetResponse = {
@@ -13,12 +20,12 @@ export async function GET(request: Request) {
       actions: [
         {
           label: "Vote for Trump",
-          href: "/api/vote?candidate=trump",
+          href: "/api/vote?candidate=Trump",
           type: 'transaction'
         },
         {
           label: "Vote for Harris",
-          href: "/api/vote?candidate=harris",
+          href: "/api/vote?candidate=Harris",
           type: 'transaction'
         }
       ]
@@ -36,6 +43,8 @@ export async function POST(request: Request) {
   }
 
   const connection = new Connection('http://127.0.0.1:8899', 'confirmed');
+  const program: Program<Voting> = new Program(IDL, { connection })
+
   const body: ActionPostRequest = await request.json();
   let voter;
 
@@ -44,4 +53,25 @@ export async function POST(request: Request) {
   } catch (error) {
     return new Response("Invalid Account", { status: 400, headers:ACTIONS_CORS_HEADERS })
   }
+
+  const instruction = await program.methods.vote(candidate, new anchor.BN(1)).accounts({
+    signer: voter
+  }).instruction();
+
+  const blockHash = await connection.getLatestBlockhash();
+
+  const transaction = new Transaction({
+    feePayer: voter,
+    blockhash: blockHash.blockhash,
+    lastValidBlockHeight: blockHash.lastValidBlockHeight
+  }).add(instruction)
+
+  const response = await createPostResponse({
+    fields: {
+      transaction: transaction
+    }
+  });
+
+  return Response.json(response, { headers: ACTIONS_CORS_HEADERS })
+
 }
