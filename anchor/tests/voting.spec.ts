@@ -14,17 +14,7 @@ describe('voting', () => {
   let context;
   let provider;
   anchor.setProvider(anchor.AnchorProvider.env());
-  let votingProgram = anchor.workspace.Voting as Program<Voting>;
-
-  beforeAll(async() => {
-    // context = await startAnchor("", [{name: 'voting', programId: votingAddress}], []);
-    // provider = new BankrunProvider(context);
-
-    // votingProgram = new Program<Voting>(
-    //   IDL,
-    //   provider
-    // );
-  })
+  const votingProgram = anchor.workspace.Voting as Program<Voting>;
 
   // initialize voting test
   it('Initialize Voting', async () => {
